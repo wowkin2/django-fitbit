@@ -1,4 +1,5 @@
+django
 fitbit>=0.3.0
-celery>=3.1.13
+# celery>=3.1.13  # should be optional
 simplejson
 six

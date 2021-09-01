@@ -1,8 +1,8 @@
+import importlib
 import logging
 import random
 
-from celery import shared_task
-from celery.exceptions import Ignore, Reject
+from .defaults import FITAPP_WORKER_TASK, FITAPP_WORKER_TASK_IGNORE, FITAPP_WORKER_TASK_REJECT
 from dateutil import parser
 from django.core.cache import cache
 from django.db import transaction
@@ -13,10 +13,14 @@ from .models import UserFitbit, TimeSeriesData, TimeSeriesDataType
 
 
 logger = logging.getLogger(__name__)
-LOCK_EXPIRE = 60 * 5 # Lock expires in 5 minutes
+LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
+
+task = getattr(importlib.import_module(FITAPP_WORKER_TASK[0]), FITAPP_WORKER_TASK[1])
+Ignore = getattr(importlib.import_module(FITAPP_WORKER_TASK_IGNORE[0]), FITAPP_WORKER_TASK_IGNORE[1])
+Reject = getattr(importlib.import_module(FITAPP_WORKER_TASK_REJECT[0]), FITAPP_WORKER_TASK_REJECT[1])
 
 
-@shared_task
+@task
 def subscribe(fitbit_user, subscriber_id):
     """ Subscribe to the user's fitbit data """
 
@@ -30,7 +34,7 @@ def subscribe(fitbit_user, subscriber_id):
             raise Reject(e, requeue=False)
 
 
-@shared_task
+@task
 def unsubscribe(*args, **kwargs):
     """ Unsubscribe from a user's fitbit data """
 
@@ -47,7 +51,7 @@ def unsubscribe(*args, **kwargs):
         raise Reject(e, requeue=False)
 
 
-@shared_task(bind=True)
+@task(bind=True)
 def get_time_series_data(self, fitbit_user, cat, resource, date=None):
     """ Get the user's time series data """
 
