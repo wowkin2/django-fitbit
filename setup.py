@@ -10,7 +10,7 @@ setup(
     packages=find_packages(),
     install_requires=["setuptools"] + required,
     include_package_data=True,
-    url="https://github.com/wowkin2/django-fitbit/",
+    url="https://github.com/orcasgit/django-fitbit/",
     license="",
     description="Django integration for python-fitbit",
     long_description=open("README.md").read(),

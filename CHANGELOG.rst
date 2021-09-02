@@ -1,3 +1,10 @@
+0.3.1 (2021-09-02)
+------------------
+
+- Made task manager to be dynamically defined, instead of having dependency to Celery
+- Fixed `python_2_unicode_compatible` to be imported from `six` instead
+- Added default `on_delete` behaviour for ForeignKey and OneToOneField
+
 0.3.0 (2017-01-25)
 ------------------
 

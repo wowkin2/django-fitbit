@@ -1,5 +1,7 @@
 django
-fitbit>=0.3.0
-# celery>=3.1.13  # should be optional
+# TODO: following is temporary and should be fixed when v0.3.2 will be published
+# fitbit>=0.3.2
+git+https://github.com/wowkin2/python-fitbit.git@improvements
+# celery>=3.1.13  # TODO: should be optional
 simplejson
 six

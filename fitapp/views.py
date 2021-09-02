@@ -1,4 +1,3 @@
-from functools import cmp_to_key
 import simplejson as json
 
 from dateutil import parser
@@ -6,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.signals import user_logged_in
 from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.dispatch import receiver
 from django.http import HttpResponse, HttpResponseServerError, Http404
 from django.shortcuts import redirect, render
@@ -290,8 +289,10 @@ def update(request):
     raise Http404
 
 
-def make_response(code=None, objects=[]):
+def make_response(code=None, objects=None):
     """AJAX helper method to generate a response"""
+    if not objects:
+        objects = []
 
     data = {
         'meta': {'total_count': len(objects), 'status_code': code},
@@ -330,6 +331,8 @@ def normalize_date_range(request, fitbit_data):
                 kwargs = {'weeks': int(period.replace('w', ''))}
             elif 'd' in period:
                 kwargs = {'days': int(period.replace('d', ''))}
+            else:
+                kwargs = {}
             end_date = start + relativedelta(**kwargs)
             result['date__lte'] = end_date.strftime('%Y-%m-%d')
 
@@ -417,7 +420,7 @@ def get_data(request, category, resource):
     try:
         resource_type = TimeSeriesDataType.objects.get(
             category=getattr(TimeSeriesDataType, category), resource=resource)
-    except:
+    except Exception:
         return make_response(104)
 
     fitapp_subscribe = utils.get_setting('FITAPP_SUBSCRIBE')
@@ -462,7 +465,7 @@ def get_data(request, category, resource):
         return make_response(105)
     except HTTPServerError:
         return make_response(106)
-    except:
+    except Exception:
         # Other documented exceptions include TypeError, ValueError,
         # HTTPNotFound, and HTTPBadRequest. But they shouldn't occur, so we'll
         # send a 500 and check it out.
