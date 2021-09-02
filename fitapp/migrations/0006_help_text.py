@@ -65,6 +65,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='userfitbit',
             name='user',
-            field=models.OneToOneField(to=settings.AUTH_USER_MODEL, help_text=b'The user'),
+            field=models.OneToOneField(to=settings.AUTH_USER_MODEL, help_text=b'The user', on_delete=models.CASCADE),
         ),
     ]
