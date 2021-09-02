@@ -2,19 +2,21 @@ import importlib
 import logging
 import random
 
-from .defaults import FITAPP_WORKER_TASK, FITAPP_WORKER_TASK_IGNORE, FITAPP_WORKER_TASK_REJECT
 from dateutil import parser
 from django.core.cache import cache
 from django.db import transaction
 from fitbit.exceptions import HTTPBadRequest, HTTPTooManyRequests
 
-from . import utils
+from .utils import create_fitbit, get_fitbit_data, get_setting
 from .models import UserFitbit, TimeSeriesData, TimeSeriesDataType
 
 
 logger = logging.getLogger(__name__)
 LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
 
+FITAPP_WORKER_TASK = get_setting("FITAPP_WORKER_TASK")
+FITAPP_WORKER_TASK_IGNORE = get_setting("FITAPP_WORKER_TASK_IGNORE")
+FITAPP_WORKER_TASK_REJECT = get_setting("FITAPP_WORKER_TASK_REJECT")
 task = getattr(importlib.import_module(FITAPP_WORKER_TASK[0]), FITAPP_WORKER_TASK[1])
 Ignore = getattr(importlib.import_module(FITAPP_WORKER_TASK_IGNORE[0]), FITAPP_WORKER_TASK_IGNORE[1])
 Reject = getattr(importlib.import_module(FITAPP_WORKER_TASK_REJECT[0]), FITAPP_WORKER_TASK_REJECT[1])
@@ -26,7 +28,7 @@ def subscribe(fitbit_user, subscriber_id):
 
     fbusers = UserFitbit.objects.filter(fitbit_user=fitbit_user)
     for fbuser in fbusers:
-        fb = utils.create_fitbit(**fbuser.get_user_data())
+        fb = create_fitbit(**fbuser.get_user_data())
         try:
             fb.subscription(fbuser.user.id, subscriber_id)
         except Exception as e:
@@ -40,7 +42,7 @@ def unsubscribe(*args, **kwargs):
 
     # Ignore updated token, it's not needed. The session gets the new token
     # automatically
-    fb = utils.create_fitbit(refresh_cb=lambda token: None, **kwargs)
+    fb = create_fitbit(refresh_cb=lambda token: None, **kwargs)
     try:
         for sub in fb.list_subscriptions()['apiSubscriptions']:
             if sub['ownerId'] == kwargs['user_id']:
@@ -81,7 +83,7 @@ def get_time_series_data(self, fitbit_user, cat, resource, date=None):
                 dates = {'base_date': date, 'end_date': date}
 
             for fbuser in fbusers:
-                data = utils.get_fitbit_data(fbuser, _type, **dates)
+                data = get_fitbit_data(fbuser, _type, **dates)
                 for datum in data:
                     # Create new record or update existing record
                     date = parser.parse(datum['dateTime'])
