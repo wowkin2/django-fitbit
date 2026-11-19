@@ -41,3 +41,7 @@ FITAPP_ERROR_TEMPLATE = 'fitapp/error.html'
 # called with the request as the only parameter to get the final value for the
 # message.
 FITAPP_DECORATOR_MESSAGE = 'This page requires Fitbit integration.'
+
+FITAPP_WORKER_TASK = ('celery', 'shared_task')
+FITAPP_WORKER_TASK_IGNORE = ('celery.exceptions', 'Ignore')
+FITAPP_WORKER_TASK_REJECT = ('celery.exceptions', 'Reject')
